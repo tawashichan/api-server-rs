@@ -1,0 +1,16 @@
+[package]
+authors = ["irieryota <ryotairie123@gmail.com>"]
+edition = "2018"
+name = "api-server-rs"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = "*"
+sqlx = {version = "*", features = ["runtime-tokio-native-tls"]}
+tokio = {features = ["full"], version = "0.2"}
+warp = "0.2"
+async-trait = "*"
+rusoto_core = "*"
+rusoto_dynamodb = "*"
