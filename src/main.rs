@@ -18,13 +18,20 @@ pub struct UserResp {
     pub name: String,
 }
 
-async fn find_user(services: Arc<Services>, id: String) -> Result<impl warp::Reply, Infallible> {
+async fn find_user(services: Arc<Services>, id: String) -> Result<impl warp::Reply,warp::Rejection> {
     let user_id = Id::new(id);
-    let user = services.user_service.find_by_id(&user_id).await.unwrap();
-    Ok(warp::reply::json(&user.to_resp()))
+    match services.user_service.find_by_id(&user_id).await {
+        Ok(user) => Ok(warp::reply::json(&user.to_resp())),
+        Err(err) => {
+            println!("{:?}",err);
+            Err(warp::reject())
+        },
+    }
 }
 
-fn with_services(services: Arc<Services>) -> impl Filter<Extract = (Arc<Services>,), Error = Infallible> + Clone {
+fn with_services(
+    services: Arc<Services>,
+) -> impl Filter<Extract = (Arc<Services>,), Error = Infallible> + Clone {
     warp::any().map(move || services.clone())
 }
 
@@ -38,5 +45,5 @@ async fn main() {
         .and(warp::path::param::<String>())
         .and_then(find_user);
 
-    warp::serve(find_user).run(([127, 0, 0, 1], 8888)).await
+    warp::serve(find_user).run(([127, 0, 0, 1], 8888)).await;
 }

@@ -1,8 +1,12 @@
 use crate::domain::model::identity::Id;
-use crate::domain::model::user::User;
+use crate::domain::model::user::{User, UserError};
 use crate::domain::service::user_service::IUserRepository;
+use anyhow::Result;
 use async_trait::async_trait;
-use rusoto_dynamodb::{AttributeValue, DynamoDb, DynamoDbClient, GetItemInput};
+use dynomite::Item;
+use dynomite::{
+    dynamodb::{DynamoDb, DynamoDbClient, GetItemInput},FromAttributes,Attributes,
+};
 use std::sync::Arc;
 
 pub struct UserRepository {
@@ -15,35 +19,38 @@ impl UserRepository {
     }
 }
 
+#[derive(Item, Debug, Clone)]
+struct UserRecord {
+    #[dynomite(partition_key)]
+    user_id: String,
+    name: String,
+}
+
+impl UserRecord {
+    fn to_model(self) -> User {
+        User::new(Id::<User>::new(self.user_id), self.name)
+    }
+}
+
 static TABLE_NAME: &str = "user_tawashi";
 
 #[async_trait]
 impl IUserRepository for UserRepository {
-    async fn find_by_id(&self, user_id: &Id<User>) -> Result<User, ()> {
-        let mut key: std::collections::hash_map::HashMap<String, AttributeValue> =
-            std::collections::hash_map::HashMap::new();
-        key.insert(
-            String::from("user_id"),
-            AttributeValue {
-                s: Some(user_id.string()),
+    async fn find_by_id(&self, user_id: &Id<User>) -> Result<User> {
+        let user_id = user_id.string();
+        let key = UserRecordKey { user_id };
+        let key: Attributes = key.into();
+
+        let result = self
+            .client
+            .get_item(GetItemInput {
+                table_name: TABLE_NAME.into(),
+                key,
                 ..Default::default()
-            },
-        );
-        let input = GetItemInput {
-            key,
-            table_name: String::from(TABLE_NAME),
-            ..Default::default()
-        };
-        match self.client.get_item(input).await {
-            Ok(result) => {
-                let item = result.item.unwrap();
-                let id = item.get("user_id").unwrap().s.as_ref().unwrap();
-                let name = item.get("name").unwrap().s.as_ref().unwrap();
-                Ok(User::new(Id::new(id.clone()), name.clone()))
-            }
-            Err(e) => {
-                panic!("{:?}",e)
-            }
-        }
+            })
+            .await?;
+
+        let rec: UserRecord = FromAttributes::from_attrs(result.item.ok_or(UserError::NotFound)?)?;
+        Ok(rec.to_model())
     }
 }

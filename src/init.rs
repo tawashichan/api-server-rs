@@ -1,8 +1,8 @@
 use crate::domain::service::user_service::{IUserService, UserService};
 use crate::infra::user_repository::UserRepository;
-use std::sync::Arc;
-use rusoto_dynamodb::{DynamoDbClient};
+use dynomite::dynamodb::DynamoDbClient;
 use rusoto_core;
+use std::sync::Arc;
 
 pub struct Infra {
     pub user_repository: Arc<UserRepository>,
@@ -13,7 +13,7 @@ pub struct Services {
 }
 
 fn init_infra() -> Infra {
-    let dynamodb_client = Arc::new(DynamoDbClient::new(rusoto_core::region::Region::ApNortheast1));
+    let dynamodb_client = Arc::new(DynamoDbClient::new(rusoto_core::region::Region::default()));
     let user_repository = UserRepository::new(dynamodb_client);
 
     Infra {

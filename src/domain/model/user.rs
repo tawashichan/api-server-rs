@@ -1,5 +1,6 @@
 use crate::domain::model::identity::Id;
 use crate::UserResp;
+use thiserror::Error;
 
 #[derive(Debug)]
 pub struct User {
@@ -19,4 +20,10 @@ impl User {
             name: self.name,
         }
     }
+}
+
+#[derive(Error, Debug)]
+pub enum UserError {
+    #[error("user not found")]
+    NotFound,
 }
