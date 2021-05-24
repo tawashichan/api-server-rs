@@ -8,10 +8,11 @@ version = "0.1.0"
 
 [dependencies]
 anyhow = "*"
-thiserror = "*"
 async-trait = "*"
 dynomite = "*"
 rusoto_core = "0.45"
 serde = "*"
+thiserror = "*"
 tokio = {features = ["full"], version = "0.2"}
+uuid = {version = "0.8", features = ["serde", "v4"]}
 warp = "0.2"
