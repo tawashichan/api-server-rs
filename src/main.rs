@@ -15,6 +15,7 @@ pub mod domain;
 pub mod infra;
 pub mod init;
 pub mod libs;
+pub mod web;
 
 #[derive(Serialize)]
 pub struct UserResp {
