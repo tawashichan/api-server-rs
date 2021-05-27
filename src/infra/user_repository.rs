@@ -49,8 +49,6 @@ impl UserRecord {
     }
 }
 
-static TABLE_NAME: &str = "user_tawashi";
-
 #[async_trait]
 impl IUserRepository for UserRepository {
     async fn find_by_id(&self, user_id: &Id<User>) -> Result<User> {
@@ -61,7 +59,7 @@ impl IUserRepository for UserRepository {
         let result = self
             .client
             .get_item(GetItemInput {
-                table_name: TABLE_NAME.into(),
+                table_name: self.table_name.clone(),
                 key,
                 ..Default::default()
             })
@@ -74,7 +72,7 @@ impl IUserRepository for UserRepository {
     async fn save(&self, user: User) -> Result<()> {
         let record = UserRecord::from_model(user);
 
-        let result = self
+        let _ = self
             .client
             .put_item(PutItemInput {
                 table_name: self.table_name.clone(),
