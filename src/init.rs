@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::domain::service::user_service::{IUserService, UserService};
 use crate::infra::user_repository::UserRepository;
 use dynomite::dynamodb::DynamoDbClient;
@@ -12,9 +13,9 @@ pub struct Services {
     pub user_service: UserService,
 }
 
-fn init_infra() -> Infra {
+fn init_infra(conf: &Config) -> Infra {
     let dynamodb_client = Arc::new(DynamoDbClient::new(rusoto_core::region::Region::default()));
-    let user_repository = UserRepository::new(dynamodb_client);
+    let user_repository = UserRepository::new(conf, dynamodb_client);
 
     Infra {
         user_repository: Arc::new(user_repository),
@@ -26,7 +27,7 @@ fn init_services(infra: Infra) -> Services {
     Services { user_service }
 }
 
-pub fn init() -> Arc<Services> {
-    let infra = init_infra();
+pub fn init(conf: &Config) -> Arc<Services> {
+    let infra = init_infra(conf);
     Arc::new(init_services(infra))
 }

@@ -1,5 +1,4 @@
 use crate::domain::model::identity::Id;
-use crate::UserResp;
 use anyhow::Result;
 use thiserror::Error;
 use warp::reject::Reject;
@@ -38,13 +37,6 @@ impl User {
         (self.user_id, self.name)
     }
 
-    // これはだめだが...
-    pub fn to_resp(self) -> UserResp {
-        UserResp {
-            id: self.user_id.string(),
-            name: self.name.string(),
-        }
-    }
 }
 
 #[derive(Error, Debug)]

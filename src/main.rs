@@ -1,5 +1,6 @@
 use crate::domain::model::{user::UserError, user::UserId};
 use crate::domain::service::user_service::IUserService;
+use anyhow::Result;
 use init::Services;
 use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
@@ -11,17 +12,13 @@ use warp::reject::Rejection;
 use warp::reply::Reply;
 use warp::Filter;
 
+pub mod config;
 pub mod domain;
 pub mod infra;
 pub mod init;
 pub mod libs;
+pub mod presenter;
 pub mod web;
-
-#[derive(Serialize)]
-pub struct UserResp {
-    pub id: String,
-    pub name: String,
-}
 
 async fn find_user_handler(
     services: Arc<Services>,
@@ -29,7 +26,9 @@ async fn find_user_handler(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let user_id = UserId::new_from_string(&id).unwrap();
     match services.user_service.find_by_id(&user_id).await {
-        Ok(user) => Ok(warp::reply::json(&user.to_resp())),
+        Ok(user) => Ok(warp::reply::json(
+            &presenter::user_response::UserResponse::from_model(user),
+        )),
         Err(err) => Err(warp::reject::custom(UserError::NotFound)),
     }
 }
@@ -45,7 +44,9 @@ async fn create_user_handler(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let user_id = UserId::new_from_string(&id).unwrap();
     match services.user_service.find_by_id(&user_id).await {
-        Ok(user) => Ok(warp::reply::json(&user.to_resp())),
+        Ok(user) => Ok(warp::reply::json(
+            &presenter::user_response::UserResponse::from_model(user),
+        )),
         Err(err) => Err(warp::reject::custom(UserError::NotFound)),
     }
 }
@@ -78,7 +79,12 @@ fn with_services(
 
 #[tokio::main]
 async fn main() {
-    let services = init::init();
+    let conf = match config::Config::init() {
+        Ok(conf) => conf,
+        Err(e) => panic!("{:?}", e),
+    };
+
+    let services = init::init(&conf);
 
     /*let find_user = warp::any()
     .and(

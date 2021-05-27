@@ -1,5 +1,6 @@
+use crate::config::Config;
 use crate::domain::model::identity::Id;
-use crate::domain::model::user::{User, UserError,UserId,UserName};
+use crate::domain::model::user::{User, UserError, UserId, UserName};
 use crate::domain::repositories::user_repository::IUserRepository;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -11,12 +12,16 @@ use dynomite::{
 use std::sync::Arc;
 
 pub struct UserRepository {
+    table_name: String,
     client: Arc<DynamoDbClient>,
 }
 
 impl UserRepository {
-    pub fn new(client: Arc<DynamoDbClient>) -> Self {
-        UserRepository { client }
+    pub fn new(conf: &Config, client: Arc<DynamoDbClient>) -> Self {
+        UserRepository {
+            table_name: conf.user_table_name.clone(),
+            client,
+        }
     }
 }
 
@@ -72,7 +77,7 @@ impl IUserRepository for UserRepository {
         let result = self
             .client
             .put_item(PutItemInput {
-                table_name: TABLE_NAME.into(),
+                table_name: self.table_name.clone(),
                 item: record.into(),
                 ..Default::default()
             })

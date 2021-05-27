@@ -1,0 +1,1 @@
+USER_TABLE_NAME=user_tawashi cargo run
