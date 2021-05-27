@@ -1,3 +1,3 @@
 pub mod model;
-pub mod repositories;
 pub mod service;
+pub mod traits;

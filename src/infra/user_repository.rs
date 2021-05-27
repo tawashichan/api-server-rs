@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::domain::model::identity::Id;
 use crate::domain::model::user::{User, UserError, UserId, UserName};
-use crate::domain::repositories::user_repository::IUserRepository;
+use crate::domain::traits::user_repository::IUserRepository;
 use anyhow::Result;
 use async_trait::async_trait;
 use dynomite::Item;

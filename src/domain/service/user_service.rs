@@ -1,5 +1,5 @@
 use crate::domain::model::{identity::Id, user::User, user::UserId, user::UserName};
-use crate::domain::repositories::user_repository::IUserRepository;
+use crate::domain::traits::user_repository::IUserRepository;
 use crate::infra::user_repository::UserRepository;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -20,7 +20,6 @@ pub trait IUserService {
     async fn create_user(&self, name: &str) -> Result<()> {
         let id = UserId::new();
         let name = UserName::new(name)?;
-        
         let user = User::new(id, name);
         self.user_repository().save(user).await
     }
