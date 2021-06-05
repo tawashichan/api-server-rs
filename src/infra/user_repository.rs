@@ -1,6 +1,9 @@
 use crate::config::Config;
 use crate::domain::model::identity::Id;
-use crate::domain::model::user::{User, UserError, UserId, UserName};
+use crate::domain::model::{
+    email::Email,
+    user::{User, UserError, UserId, UserName},
+};
 use crate::domain::traits::user_repository::IUserRepository;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -30,27 +33,34 @@ struct UserRecord {
     #[dynomite(partition_key)]
     user_id: String,
     name: String,
+    email: String,
 }
 
 impl UserRecord {
     fn to_model(self) -> Result<User> {
         let id = UserId::new_from_string(&self.user_id)?;
         let name = UserName::new(&self.name)?;
+        let email = Email::new(&self.name)?;
 
-        Ok(User::new(id, name))
+        Ok(User::new(id, name, email))
     }
 
     fn from_model(user_model: User) -> Self {
-        let (id, name) = user_model.propeties();
+        let (id, name, email) = user_model.propeties();
         UserRecord {
             user_id: id.string(),
             name: name.string(),
+            email: email.string(),
         }
     }
 }
 
 #[async_trait]
 impl IUserRepository for UserRepository {
+    async fn find_by_email(&self, email: &Email) -> Result<User> {
+        unimplemented!()
+    }
+
     async fn find_by_id(&self, user_id: &Id<User>) -> Result<User> {
         let user_id = user_id.string();
         let key = UserRecordKey { user_id };

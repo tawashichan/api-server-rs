@@ -1,4 +1,4 @@
-use crate::domain::model::identity::Id;
+use crate::domain::model::{email::Email, identity::Id};
 use anyhow::Result;
 use thiserror::Error;
 use warp::reject::Reject;
@@ -9,6 +9,7 @@ pub type UserId = Id<User>;
 pub struct User {
     user_id: UserId,
     name: UserName,
+    email: Email,
 }
 
 #[derive(Debug)]
@@ -28,15 +29,18 @@ impl UserName {
 }
 
 impl User {
-    pub fn new(user_id: UserId, name: UserName) -> User {
-        User { user_id, name }
+    pub fn new(user_id: UserId, name: UserName, email: Email) -> User {
+        User {
+            user_id,
+            name,
+            email,
+        }
     }
 
     // 主にmapping用途
-    pub fn propeties(self) -> (Id<User>, UserName) {
-        (self.user_id, self.name)
+    pub fn propeties(self) -> (Id<User>, UserName, Email) {
+        (self.user_id, self.name, self.email)
     }
-
 }
 
 #[derive(Error, Debug)]

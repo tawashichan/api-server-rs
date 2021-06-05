@@ -1,9 +1,14 @@
-use crate::domain::model::{identity::Id, user::User, user::UserId, user::UserName};
+use crate::domain::model::{email::Email, identity::Id, user::User, user::UserName};
 use crate::domain::traits::{id_generator::IIdGenerator, user_repository::IUserRepository};
 use crate::infra::{id_generator::IdGenerator, user_repository::UserRepository};
 use anyhow::Result;
 use async_trait::async_trait;
 use std::sync::Arc;
+
+pub struct CreateUserReq {
+    name: UserName,
+    email: Email,
+}
 
 #[async_trait]
 pub trait IUserService {
@@ -23,10 +28,9 @@ pub trait IUserService {
         self.user_repository().find_by_id(user_id).await
     }
 
-    async fn create_user(&self, name: &str) -> Result<()> {
+    async fn create_user(&self, req: CreateUserReq) -> Result<()> {
         let id = self.id_generator().generate::<User>();
-        let name = UserName::new(name)?;
-        let user = User::new(id, name);
+        let user = User::new(id, req.name, req.email);
         self.user_repository().save(user).await
     }
 }
