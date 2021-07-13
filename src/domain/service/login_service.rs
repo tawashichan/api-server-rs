@@ -7,6 +7,7 @@ use crate::domain::{
 };
 use anyhow::Result;
 use async_trait::async_trait;
+use serde::Serialize;
 use std::sync::Arc;
 
 pub struct LoginRequest {
@@ -14,6 +15,7 @@ pub struct LoginRequest {
     password: LoginPassword,
 }
 
+#[derive(Serialize)]
 pub struct LoginResponse {
     token: LoginToken,
 }

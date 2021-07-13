@@ -1,31 +1,21 @@
-use crate::domain::model::user::UserId;
-use crate::domain::service::user_service::IUserService;
 use crate::error_handler::handle_rejection;
 use crate::handler::{create_user_handler, find_user_handler};
-use anyhow::Result;
-use domain::model::email::Email;
-use domain::model::error::DomainError;
-use domain::model::user::UserName;
-use domain::service::user_service;
 use init::Services;
-use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::sync::Arc;
 use tokio;
 use warp;
 use warp::http::StatusCode;
-use warp::reject::Rejection;
-use warp::reply::Reply;
-use warp::{reject, Filter};
+use warp::{Filter};
 
 pub mod config;
 pub mod domain;
+pub mod error_handler;
+pub mod handler;
 pub mod infra;
 pub mod init;
 pub mod libs;
 pub mod presenter;
-pub mod error_handler;
-pub mod handler;
 
 fn with_services(
     services: Arc<Services>,

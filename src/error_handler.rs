@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
 use serde::Serialize;
-use warp::{Rejection, Reply, hyper::StatusCode};
+use warp::{hyper::StatusCode, Rejection, Reply};
 
 #[derive(Serialize)]
 pub struct ErrorResponse {

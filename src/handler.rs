@@ -2,7 +2,18 @@ use std::sync::Arc;
 
 use warp::{hyper::StatusCode, reject};
 
-use crate::{domain::{model::{email::Email, error::DomainError, user::{UserId, UserName}}, service::user_service::{self, IUserService}}, init::Services, presenter};
+use crate::{
+    domain::{
+        model::{
+            email::Email,
+            error::DomainError,
+            user::{UserId, UserName},
+        },
+        service::user_service::{self, IUserService},
+    },
+    init::Services,
+    presenter,
+};
 
 use serde::Deserialize;
 
