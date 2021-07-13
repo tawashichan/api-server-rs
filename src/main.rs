@@ -1,5 +1,7 @@
 use crate::domain::model::user::UserId;
 use crate::domain::service::user_service::IUserService;
+use crate::error_handler::handle_rejection;
+use crate::handler::{create_user_handler, find_user_handler};
 use anyhow::Result;
 use domain::model::email::Email;
 use domain::model::error::DomainError;
@@ -22,60 +24,8 @@ pub mod infra;
 pub mod init;
 pub mod libs;
 pub mod presenter;
-pub mod web;
-
-async fn find_user_handler(
-    services: Arc<Services>,
-    id: String,
-) -> Result<impl warp::Reply, warp::Rejection> {
-    let user_id = UserId::new_from_string(&id).map_err(|e| reject::custom(e))?;
-    match services.user_service.find_by_id(&user_id).await {
-        Ok(user) => Ok(warp::reply::json(
-            &presenter::user_response::UserResponse::from_model(user),
-        )),
-        Err(err) => Err(warp::reject::custom(err)),
-    }
-}
-
-#[derive(Deserialize)]
-struct CreateUserReq {
-    name: String,
-    email: String,
-}
-
-async fn create_user_handler(
-    services: Arc<Services>,
-    req: CreateUserReq,
-) -> Result<impl warp::Reply, warp::Rejection> {
-    let name = UserName::new(&req.name).map_err(|e| reject::custom(e))?;
-    let email = Email::new(&req.email).map_err(|e| reject::custom(e))?;
-
-    let service_req = user_service::CreateUserReq::new(name, email);
-    match services.user_service.create_user(service_req).await {
-        Ok(()) => Ok(StatusCode::OK),
-        Err(err) => Err(warp::reject::custom(DomainError::UserNotFound)),
-    }
-}
-
-#[derive(Serialize)]
-struct ErrorResponse {
-    status_code: u16,
-    message: String,
-    error_type: String,
-}
-
-async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
-    let json = warp::reply::json(&ErrorResponse {
-        status_code: 500,
-        message: "error!!!!".into(),
-        error_type: "internal_server_error".into(),
-    });
-
-    Ok(warp::reply::with_status(
-        json,
-        StatusCode::INTERNAL_SERVER_ERROR,
-    ))
-}
+pub mod error_handler;
+pub mod handler;
 
 fn with_services(
     services: Arc<Services>,
