@@ -1,7 +1,8 @@
-use crate::domain::model::{user::UserError, user::UserId};
+use crate::domain::model::user::UserId;
 use crate::domain::service::user_service::IUserService;
 use anyhow::Result;
 use domain::model::email::Email;
+use domain::model::error::DomainError;
 use domain::model::user::UserName;
 use domain::service::user_service;
 use init::Services;
@@ -27,12 +28,12 @@ async fn find_user_handler(
     services: Arc<Services>,
     id: String,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    let user_id = UserId::new_from_string(&id).unwrap();
+    let user_id = UserId::new_from_string(&id).map_err(|e| reject::custom(e))?;
     match services.user_service.find_by_id(&user_id).await {
         Ok(user) => Ok(warp::reply::json(
             &presenter::user_response::UserResponse::from_model(user),
         )),
-        Err(err) => Err(warp::reject::custom(UserError::NotFound)),
+        Err(err) => Err(warp::reject::custom(err)),
     }
 }
 
@@ -52,7 +53,7 @@ async fn create_user_handler(
     let service_req = user_service::CreateUserReq::new(name, email);
     match services.user_service.create_user(service_req).await {
         Ok(()) => Ok(StatusCode::OK),
-        Err(err) => Err(warp::reject::custom(UserError::NotFound)),
+        Err(err) => Err(warp::reject::custom(DomainError::UserNotFound)),
     }
 }
 
@@ -67,7 +68,7 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
     let json = warp::reply::json(&ErrorResponse {
         status_code: 500,
         message: "error!!!!".into(),
-        error_type: "aaa".into(),
+        error_type: "internal_server_error".into(),
     });
 
     Ok(warp::reply::with_status(

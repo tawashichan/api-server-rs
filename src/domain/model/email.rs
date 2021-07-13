@@ -1,12 +1,12 @@
 use anyhow::Result;
 
-use super::user::UserError;
+use super::error::DomainError;
 
 #[derive(Debug, Clone)]
 pub struct Email(String);
 
 impl Email {
-    pub fn new(s: &str) -> Result<Email, UserError> {
+    pub fn new(s: &str) -> Result<Email, DomainError> {
         Ok(Email(s.to_owned()))
     }
 

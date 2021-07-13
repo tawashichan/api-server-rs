@@ -1,7 +1,7 @@
 use crate::domain::model::{email::Email, identity::Id};
 use anyhow::Result;
-use thiserror::Error;
-use warp::reject::Reject;
+
+use super::error::DomainError;
 
 pub type UserId = Id<User>;
 
@@ -16,9 +16,9 @@ pub struct User {
 pub struct UserName(String);
 
 impl UserName {
-    pub fn new(s: &str) -> Result<Self, UserError> {
+    pub fn new(s: &str) -> Result<Self, DomainError> {
         if s.len() >= 100 {
-            return Err(UserError::InvalidUserName);
+            return Err(DomainError::InvalidUserName);
         }
         Ok(UserName(s.to_owned()))
     }
@@ -42,13 +42,3 @@ impl User {
         (self.user_id, self.name, self.email)
     }
 }
-
-#[derive(Error, Debug)]
-pub enum UserError {
-    #[error("user_not_found")]
-    NotFound,
-    #[error("invalid_user_name")]
-    InvalidUserName,
-}
-
-impl Reject for UserError {}

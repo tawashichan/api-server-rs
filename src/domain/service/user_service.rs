@@ -1,3 +1,4 @@
+use crate::domain::model::error::DomainError;
 use crate::domain::model::{email::Email, identity::Id, user::User, user::UserName};
 use crate::domain::traits::{id_generator::IIdGenerator, user_repository::IUserRepository};
 use crate::infra::{id_generator::IdGenerator, user_repository::UserRepository};
@@ -30,11 +31,11 @@ pub trait IUserService {
 
     fn id_generator(&self) -> &Self::IdGenerator;
 
-    async fn find_by_id(&self, user_id: &Id<User>) -> Result<User> {
+    async fn find_by_id(&self, user_id: &Id<User>) -> Result<User, DomainError> {
         self.user_repository().find_by_id(user_id).await
     }
 
-    async fn create_user(&self, req: CreateUserReq) -> Result<()> {
+    async fn create_user(&self, req: CreateUserReq) -> Result<(), DomainError> {
         let id = self.id_generator().generate::<User>();
         let user = User::new(id, req.name, req.email);
         self.user_repository().save(user).await
