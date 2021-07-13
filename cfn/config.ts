@@ -4,6 +4,10 @@ export interface Config {
   env: Env;
   ecs: ECS;
   albCertificateArns: string[];
+  account: {
+    id: string;
+    region: string;
+  };
 }
 
 interface VPC {

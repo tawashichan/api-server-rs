@@ -9,8 +9,16 @@ const conf = (() => {
     case "dev":
       return devConfig;
     default:
-      throw new Error("env not found");
+      return devConfig;
+    //throw new Error("env not found");
   }
 })();
+
+const config = conf;
+const appEnv = {
+  account: config.account.id,
+  region: config.account.region,
+};
+
 const app = new cdk.App();
-new CfnStack(app, "api-server-rust-stack", conf);
+new CfnStack(app, "api-server-rust-stack", conf, { env: appEnv });

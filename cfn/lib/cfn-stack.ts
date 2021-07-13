@@ -31,6 +31,7 @@ export class CfnStack extends cdk.Stack {
     );
 
     const userTable = new dynamo.Table(this, `${id}-user`, {
+      tableName: `${id}-user-table`,
       partitionKey: {
         name: "user_id",
         type: dynamo.AttributeType.STRING,
