@@ -10,7 +10,7 @@ impl<T> Id<T> {
     }
 
     pub fn new_from_string(s: &str) -> Result<Id<T>> {
-        Ok(Id(uuid::Uuid::parse_str(s)?,std::marker::PhantomData))
+        Ok(Id(uuid::Uuid::parse_str(s)?, std::marker::PhantomData))
     }
 
     pub fn string(&self) -> String {

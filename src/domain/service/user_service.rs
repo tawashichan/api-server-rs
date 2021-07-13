@@ -10,6 +10,12 @@ pub struct CreateUserReq {
     email: Email,
 }
 
+impl CreateUserReq {
+    pub fn new(name: UserName, email: Email) -> Self {
+        CreateUserReq { name, email }
+    }
+}
+
 #[async_trait]
 pub trait IUserService {
     type UserRepository: IUserRepository + Sync + Send;

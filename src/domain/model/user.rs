@@ -16,9 +16,9 @@ pub struct User {
 pub struct UserName(String);
 
 impl UserName {
-    pub fn new(s: &str) -> Result<Self> {
+    pub fn new(s: &str) -> Result<Self, UserError> {
         if s.len() >= 100 {
-            return Err(UserError::InvalidUserName)?;
+            return Err(UserError::InvalidUserName);
         }
         Ok(UserName(s.to_owned()))
     }

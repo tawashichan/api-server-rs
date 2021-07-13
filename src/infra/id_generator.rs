@@ -5,7 +5,7 @@ pub struct IdGenerator {}
 
 impl IdGenerator {
     pub fn new() -> Self {
-        IdGenerator{}
+        IdGenerator {}
     }
 }
 

@@ -1,6 +1,9 @@
 use crate::domain::model::{user::UserError, user::UserId};
 use crate::domain::service::user_service::IUserService;
 use anyhow::Result;
+use domain::model::email::Email;
+use domain::model::user::UserName;
+use domain::service::user_service;
 use init::Services;
 use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
@@ -10,7 +13,7 @@ use warp;
 use warp::http::StatusCode;
 use warp::reject::Rejection;
 use warp::reply::Reply;
-use warp::Filter;
+use warp::{reject, Filter};
 
 pub mod config;
 pub mod domain;
@@ -36,17 +39,19 @@ async fn find_user_handler(
 #[derive(Deserialize)]
 struct CreateUserReq {
     name: String,
+    email: String,
 }
 
 async fn create_user_handler(
     services: Arc<Services>,
-    id: String,
+    req: CreateUserReq,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    let user_id = UserId::new_from_string(&id).unwrap();
-    match services.user_service.find_by_id(&user_id).await {
-        Ok(user) => Ok(warp::reply::json(
-            &presenter::user_response::UserResponse::from_model(user),
-        )),
+    let name = UserName::new(&req.name).map_err(|e| reject::custom(e))?;
+    let email = Email::new(&req.email).map_err(|e| reject::custom(e))?;
+
+    let service_req = user_service::CreateUserReq::new(name, email);
+    match services.user_service.create_user(service_req).await {
+        Ok(()) => Ok(StatusCode::OK),
         Err(err) => Err(warp::reject::custom(UserError::NotFound)),
     }
 }
@@ -86,26 +91,29 @@ async fn main() {
 
     let services = init::init(&conf);
 
-    /*let find_user = warp::any()
-    .and(
-        warp::get().and(
-            warp::path("users")
-                .and(warp::path!(String))
-                .and_then(move |id| find_user_handler(services.clone(), id)),
-        ),
-    )
-    .recover(handle_rejection);*/
+    let routing_base = warp::any().and(with_services(services));
 
-    let find_user = warp::any()
-        .and(
-            warp::path("users").and(
-                warp::get()
-                    .and(with_services(services))
-                    .and(warp::path!(String))
-                    .and_then(find_user_handler),
-            ), /*.or(warp::post()
-               .and_then(move || create_user_handler(services.clone(), "aaa".into()))),*/
-        )
+    let health_check = warp::path!("health_check").map(|| StatusCode::OK);
+
+    let user_path = warp::path("users");
+
+    let find_user = routing_base
+        .clone()
+        .and(user_path)
+        .and(warp::get())
+        .and(warp::path!(String))
+        .and_then(find_user_handler);
+
+    let create_user = routing_base
+        .clone()
+        .and(user_path)
+        .and(warp::post())
+        .and(warp::body::json())
+        .and_then(create_user_handler);
+
+    let find_user = health_check
+        .or(find_user)
+        .or(create_user)
         .recover(handle_rejection);
 
     warp::serve(find_user).run(([127, 0, 0, 1], 8888)).await;

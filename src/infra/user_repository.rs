@@ -7,6 +7,7 @@ use crate::domain::model::{
 use crate::domain::traits::user_repository::IUserRepository;
 use anyhow::Result;
 use async_trait::async_trait;
+use dynomite::dynamodb::QueryInput;
 use dynomite::Item;
 use dynomite::{
     dynamodb::{DynamoDb, DynamoDbClient, GetItemInput, PutItemInput},
@@ -16,6 +17,7 @@ use std::sync::Arc;
 
 pub struct UserRepository {
     table_name: String,
+    gsi_name_email: String,
     client: Arc<DynamoDbClient>,
 }
 
@@ -23,6 +25,7 @@ impl UserRepository {
     pub fn new(conf: &Config, client: Arc<DynamoDbClient>) -> Self {
         UserRepository {
             table_name: conf.user_table_name.clone(),
+            gsi_name_email: "gsi_email".to_string(),
             client,
         }
     }
@@ -58,6 +61,20 @@ impl UserRecord {
 #[async_trait]
 impl IUserRepository for UserRepository {
     async fn find_by_email(&self, email: &Email) -> Result<User> {
+        let email = email.string();
+
+        let result = self
+            .client
+            .query(QueryInput {
+                table_name: self.table_name.clone(),
+                index_name: Some(self.gsi_name_email.clone()),
+                key_condition_expression: Some(
+                    format!("{:?} = {:?}", self.gsi_name_email.clone(), email).to_string(),
+                ),
+                ..Default::default()
+            })
+            .await?;
+
         unimplemented!()
     }
 
