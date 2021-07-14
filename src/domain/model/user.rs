@@ -5,14 +5,14 @@ use super::error::DomainError;
 
 pub type UserId = Id<User>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct User {
     user_id: UserId,
     name: UserName,
     email: Email,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UserName(String);
 
 impl UserName {
@@ -38,7 +38,11 @@ impl User {
     }
 
     // 主にmapping用途
-    pub fn propeties(self) -> (Id<User>, UserName, Email) {
+    pub fn propeties(self) -> (UserId, UserName, Email) {
         (self.user_id, self.name, self.email)
+    }
+
+    pub fn id(&self) -> UserId {
+        self.user_id.clone()
     }
 }

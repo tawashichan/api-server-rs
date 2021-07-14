@@ -64,7 +64,7 @@ impl IUserRepository for UserRepository {
     async fn find_by_email(&self, email: &Email) -> Result<User, DomainError> {
         let email = email.string();
 
-        let result = self
+        let _result = self
             .client
             .query(QueryInput {
                 table_name: self.table_name.clone(),
@@ -75,7 +75,7 @@ impl IUserRepository for UserRepository {
                 ..Default::default()
             })
             .await
-            .map_err(|e| DomainError::DBError)?;
+            .map_err(|e| DomainError::DBError(e.to_string()))?;
 
         unimplemented!()
     }
@@ -93,10 +93,10 @@ impl IUserRepository for UserRepository {
                 ..Default::default()
             })
             .await
-            .map_err(|e| DomainError::DBError)?;
+            .map_err(|e| DomainError::DBError(e.to_string()))?;
 
         let rec: UserRecord = UserRecord::from_attrs(result.item.ok_or(DomainError::UserNotFound)?)
-            .map_err(|err| DomainError::UserNotFound)?;
+            .map_err(|_| DomainError::UserNotFound)?;
         Ok(rec.to_model()?)
     }
 
@@ -111,7 +111,7 @@ impl IUserRepository for UserRepository {
                 ..Default::default()
             })
             .await
-            .map_err(|e| DomainError::DBError)?;
+            .map_err(|e| DomainError::DBError(e.to_string()))?;
 
         Ok(())
     }

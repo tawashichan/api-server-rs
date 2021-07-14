@@ -6,7 +6,7 @@ use std::sync::Arc;
 use tokio;
 use warp;
 use warp::http::StatusCode;
-use warp::{Filter};
+use warp::Filter;
 
 pub mod config;
 pub mod domain;
@@ -53,8 +53,8 @@ async fn main() {
         .and_then(create_user_handler);
 
     let find_user = health_check
-        .or(find_user)
         .or(create_user)
+        .or(find_user)
         .recover(handle_rejection);
 
     warp::serve(find_user).run(([127, 0, 0, 1], 8888)).await;

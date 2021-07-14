@@ -6,7 +6,6 @@ use crate::{
     domain::{
         model::{
             email::Email,
-            error::DomainError,
             user::{UserId, UserName},
         },
         service::user_service::{self, IUserService},
@@ -46,6 +45,6 @@ pub async fn create_user_handler(
     let service_req = user_service::CreateUserReq::new(name, email);
     match services.user_service.create_user(service_req).await {
         Ok(()) => Ok(StatusCode::OK),
-        Err(err) => Err(warp::reject::custom(DomainError::UserNotFound)),
+        Err(err) => Err(warp::reject::custom(err)),
     }
 }
