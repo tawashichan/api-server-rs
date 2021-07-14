@@ -9,8 +9,9 @@ version = "0.1.0"
 [dependencies]
 anyhow = "*"
 async-trait = "*"
-biscuit = "0.5.0"
+chrono = "0.4"
 dynomite = "*"
+jsonwebtoken = "7"
 rusoto_core = "0.45"
 serde = {version = "1.0", features = ["derive"]}
 thiserror = "1.0"
