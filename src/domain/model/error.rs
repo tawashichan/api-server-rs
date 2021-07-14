@@ -10,7 +10,9 @@ pub enum DomainError {
     #[error("invalid_id_format")]
     InvalidIdFormat,
     #[error("db_error")]
-    DBError,
+    DBError(String),
+    #[error("jwt_error")]
+    JWTError,
 }
 
 impl Reject for DomainError {}
