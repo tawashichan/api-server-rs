@@ -6,9 +6,13 @@ use crate::{
     domain::{
         model::{
             email::Email,
+            login::LoginPassword,
             user::{UserId, UserName},
         },
-        service::user_service::{self, IUserService},
+        service::{
+            login_service::{ILoginService, LoginRequest},
+            user_service::{self, IUserService},
+        },
     },
     init::Services,
     presenter,
@@ -45,6 +49,26 @@ pub async fn create_user_handler(
     let service_req = user_service::CreateUserReq::new(name, email);
     match services.user_service.create_user(service_req).await {
         Ok(()) => Ok(StatusCode::OK),
+        Err(err) => Err(warp::reject::custom(err)),
+    }
+}
+
+#[derive(Deserialize)]
+pub struct LoginRawRequest {
+    email: String,
+    password: String,
+}
+
+pub async fn login_handler(
+    services: Arc<Services>,
+    req: LoginRawRequest,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let email = Email::new(&req.email).map_err(|e| reject::custom(e))?;
+    let password = LoginPassword::new(&req.password).map_err(|e| reject::custom(e))?;
+
+    let service_req = LoginRequest { email, password };
+    match services.login_service.login(service_req).await {
+        Ok(resp) => Ok(warp::reply::json(&resp)),
         Err(err) => Err(warp::reject::custom(err)),
     }
 }

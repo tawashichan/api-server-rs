@@ -14,13 +14,22 @@ use super::time_keeper::TimeKeeper;
 
 pub struct JWTHandler {
     time_keeper: Arc<TimeKeeper>,
-    private_key: [u8],
+    private_key: Vec<u8>,
 }
 
 #[derive(Debug, Serialize)]
 struct JWTClaim {
     exp: usize,
     user_id: Id<User>,
+}
+
+impl JWTHandler {
+    pub fn new(time_keeper: Arc<TimeKeeper>) -> JWTHandler {
+        JWTHandler {
+            time_keeper,
+            private_key: vec![],
+        }
+    }
 }
 
 impl IJWTHandler for JWTHandler {
