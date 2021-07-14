@@ -1,8 +1,12 @@
-use crate::domain::model::{login::LoginToken, user::User};
+use crate::domain::model::{error::DomainError, login::LoginToken, user::User};
 use anyhow::Result;
 
+use super::time_keeper::ITimekeeper;
+
 pub trait IJWTHandler {
-    fn generate(&self, user: &User) -> Result<LoginToken> {
-        unimplemented!()
-    }
+    type Timekeeper: ITimekeeper;
+
+    fn time_keeper(&self) -> &Self::Timekeeper;
+
+    fn generate(&self, user: &User) -> Result<LoginToken, DomainError>;
 }
