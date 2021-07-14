@@ -18,7 +18,12 @@ use crate::{
     presenter,
 };
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+pub struct HealthCheckResp {
+    pub result: String,
+}
 
 pub async fn find_user_handler(
     services: Arc<Services>,

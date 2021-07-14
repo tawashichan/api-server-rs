@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::domain::traits::time_keeper::ITimekeeper;
 use anyhow::Result;
 use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 use crate::domain::{
     model::{error::DomainError, identity::Id, login::LoginToken, user::User},

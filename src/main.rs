@@ -1,5 +1,5 @@
 use crate::error_handler::handle_rejection;
-use crate::handler::{create_user_handler, find_user_handler, login_handler};
+use crate::handler::{create_user_handler, find_user_handler, login_handler, HealthCheckResp};
 use init::Services;
 use std::convert::Infallible;
 use std::sync::Arc;
@@ -34,7 +34,11 @@ async fn main() {
 
     let routing_base = warp::any().and(with_services(services));
 
-    let health_check = warp::path!("health_check").map(|| StatusCode::OK);
+    let health_check = warp::path!("health_check").map(|| {
+        warp::reply::json(&HealthCheckResp {
+            result: "ok".to_string(),
+        })
+    });
 
     let user_path = warp::path("users");
     let login_path = warp::path("login");
@@ -54,17 +58,17 @@ async fn main() {
         .and_then(create_user_handler);
 
     let login = routing_base
-    .clone()
+        .clone()
         .and(login_path)
         .and(warp::post())
         .and(warp::body::json())
         .and_then(login_handler);
-        
+
     let routing = health_check
         .or(create_user)
         .or(find_user)
         .or(login)
         .recover(handle_rejection);
-    
+
     warp::serve(routing).run(([127, 0, 0, 1], 8888)).await;
 }
