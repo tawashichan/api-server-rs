@@ -3,6 +3,8 @@ import { Config } from "../config";
 import * as ec2 from "@aws-cdk/aws-ec2";
 import * as iam from "@aws-cdk/aws-iam";
 import * as dynamo from "@aws-cdk/aws-dynamodb";
+import * as ecr from "@aws-cdk/aws-ecr";
+import * as apprunner from "@aws-cdk/aws-apprunner";
 import { RemovalPolicy } from "@aws-cdk/core";
 
 export class CfnStack extends cdk.Stack {
@@ -18,17 +20,41 @@ export class CfnStack extends cdk.Stack {
       vpcId: config.vpc.id,
     });
 
-    const appTaskRole = new iam.Role(this, `${id}-task-role-id`, {
-      assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+    const appRepository = new ecr.Repository(this, `${id}-repository`, {
+      imageScanOnPush: false,
+      repositoryName: `${id}-repository`,
     });
 
-    const appTaskExecutionRole = new iam.Role(
-      this,
-      `${id}-task-execution-role`,
-      {
-        assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-      }
+    const appBuildRole = new iam.Role(this, `${id}-build-role-id`, {
+      roleName: `${id}-build-role`,
+      assumedBy: new iam.ServicePrincipal("build.apprunner.amazonaws.com"),
+    });
+
+    const appTaskRole = new iam.Role(this, `${id}-task-role-id`, {
+      roleName: `${id}-task-role`,
+      assumedBy: new iam.ServicePrincipal("tasks.apprunner.amazonaws.com"),
+    });
+
+    appBuildRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        "service-role/AWSAppRunnerServicePolicyForECRAccess"
+      )
     );
+
+    /*const service = new apprunner.CfnService(this, `${id}-apprunner-id`, {
+      serviceName: `${id}-apprunner`,
+      instanceConfiguration: {
+        instanceRoleArn: appTaskRole.roleArn,
+      },
+      sourceConfiguration: {
+        autoDeploymentsEnabled: true,
+        imageRepository: {
+          imageRepositoryType: "ECR",
+          imageIdentifier: appRepository.repositoryUri + ":latest",
+        },
+      },
+      autoScalingConfigurationArn: appBuildRole.roleArn,
+    });*/
 
     const userTable = new dynamo.Table(this, `${id}-user`, {
       tableName: `${id}-user-table`,
@@ -40,7 +66,5 @@ export class CfnStack extends cdk.Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
     userTable.grantFullAccess(appTaskRole);
-
-    // The code that defines your stack goes here
   }
 }

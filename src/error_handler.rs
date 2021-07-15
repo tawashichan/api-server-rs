@@ -13,17 +13,15 @@ pub struct ErrorResponse {
 }
 
 pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
-
-    let (status_code,message,error_type) = match err.find::<DomainError>() {
-        Some(DomainError::DBError(s)) => {
-            (500,"error!!!!".into(), "internal_server_error".into())
+    let (status_code, message, error_type) = match err.find::<DomainError>() {
+        Some(DomainError::DBError(e)) => {
+            dbg!(e);
+            (500, "error!!!!".into(), "internal_server_error".into())
         }
-        Some(DomainError::UserNotFound) => {
-            (404,"user_not_found".into(), "user_not_found".into())
-        }
+        Some(DomainError::UserNotFound) => (404, "user_not_found".into(), "user_not_found".into()),
         _ => {
             dbg!(err);
-            (500,"error!!!!".into(), "internal_server_error".into())
+            (500, "error!!!!".into(), "internal_server_error".into())
         }
     };
 
