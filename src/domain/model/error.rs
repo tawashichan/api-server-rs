@@ -3,7 +3,7 @@ use hyper::{Body, Response};
 use serde_json::json;
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug,Clone)]
 pub enum DomainError {
     #[error("user_not_found")]
     UserNotFound,
@@ -18,7 +18,7 @@ pub enum DomainError {
 }
 
 impl IntoResponse for DomainError {
-    fn into_response(self) -> Response<Body> {
+    fn into_response(self) -> Response<Body> {      
         response::Json(json!({
             "aaa": "aaa"
         }))

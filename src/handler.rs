@@ -14,7 +14,11 @@ use crate::{
     init::Services,
     presenter::{self, user_response::UserResponse},
 };
-use axum::{extract::{Extension, Json, UrlParams}, prelude::*, response::IntoResponse};
+use axum::{
+    extract::{Extension, Json, UrlParams},
+    prelude::*,
+    response::IntoResponse,
+};
 use serde_json::json;
 use std::sync::Arc;
 
