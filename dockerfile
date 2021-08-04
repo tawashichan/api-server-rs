@@ -1,4 +1,4 @@
-FROM rust:1.53
+FROM rust:1.53 as build
 
 COPY ./Cargo.toml ./Cargo.lock ./
 RUN mkdir -p src \
@@ -6,6 +6,10 @@ RUN mkdir -p src \
     && cargo build --release
 
 COPY . /
-ENV USER_TABLE_NAME=api-server-rust-stack-user-table
 RUN cargo build --release
-CMD ["/target/release/api-server-rs"]
+
+FROM gcr.io/distroless/cc
+
+ENV USER_TABLE_NAME=api-server-rust-stack-user-table
+COPY --from=build /target/release/api-server-rs .
+CMD ["./api-server-rs"]

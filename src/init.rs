@@ -4,8 +4,7 @@ use crate::domain::service::user_service::{IUserService, UserService};
 use crate::infra::jwt_handler::JWTHandler;
 use crate::infra::time_keeper::TimeKeeper;
 use crate::infra::{id_generator::IdGenerator, user_repository::UserRepository};
-use dynomite::dynamodb::DynamoDbClient;
-use rusoto_core;
+use dynamodb::Client;
 use std::sync::Arc;
 
 pub struct Infra {
@@ -21,7 +20,7 @@ pub struct Services {
 }
 
 fn init_infra(conf: &Config) -> Infra {
-    let dynamodb_client = Arc::new(DynamoDbClient::new(rusoto_core::region::Region::default()));
+    let dynamodb_client = Arc::new(Client::from_env());
     let user_repository = UserRepository::new(conf, dynamodb_client);
     let id_generator = IdGenerator::new();
     let time_keeper = Arc::new(TimeKeeper::new());

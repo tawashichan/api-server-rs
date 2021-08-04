@@ -9,12 +9,17 @@ version = "0.1.0"
 [dependencies]
 anyhow = "*"
 async-trait = "*"
+dynamodb = { git = "https://github.com/awslabs/aws-sdk-rust", tag = "v0.0.14-alpha", package = "aws-sdk-dynamodb" }
+axum = "0.1.1"
 chrono = "0.4"
-dynomite = "*"
+#dynomite = "0.10.0"
+hyper = {version = "0.14", features = ["full"]}
 jsonwebtoken = "7"
-rusoto_core = "0.45"
+#rusoto_core = "0.47"
 serde = {version = "1.0", features = ["derive"]}
+serde_json = "*"
 thiserror = "1.0"
-tokio = {features = ["full"], version = "0.2"}
+tokio = {features = ["full"], version = "1"}
+tower = "0.4"
+tower-http = "*"
 uuid = {version = "0.8", features = ["serde", "v4"]}
-warp = "0.2"

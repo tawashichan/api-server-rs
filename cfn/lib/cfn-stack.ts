@@ -66,5 +66,6 @@ export class CfnStack extends cdk.Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
     userTable.grantFullAccess(appTaskRole);
+
   }
 }

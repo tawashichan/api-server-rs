@@ -1,5 +1,7 @@
+use axum::{prelude::*, response::IntoResponse};
+use hyper::{Body, Response};
+use serde_json::json;
 use thiserror::Error;
-use warp::reject::Reject;
 
 #[derive(Error, Debug)]
 pub enum DomainError {
@@ -15,4 +17,11 @@ pub enum DomainError {
     JWTError,
 }
 
-impl Reject for DomainError {}
+impl IntoResponse for DomainError {
+    fn into_response(self) -> Response<Body> {
+        response::Json(json!({
+            "aaa": "aaa"
+        }))
+        .into_response()
+    }
+}

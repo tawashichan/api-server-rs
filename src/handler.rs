@@ -1,11 +1,8 @@
-use std::sync::Arc;
-
-use warp::{hyper::StatusCode, reject};
-
 use crate::{
     domain::{
         model::{
             email::Email,
+            error::DomainError,
             login::LoginPassword,
             user::{UserId, UserName},
         },
@@ -15,8 +12,11 @@ use crate::{
         },
     },
     init::Services,
-    presenter,
+    presenter::{self, user_response::UserResponse},
 };
+use axum::{extract::{Extension, Json, UrlParams}, prelude::*, response::IntoResponse};
+use serde_json::json;
+use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
@@ -25,16 +25,23 @@ pub struct HealthCheckResp {
     pub result: String,
 }
 
+#[derive(Serialize)]
+pub struct ErrorResponse {
+    status_code: u16,
+    message: String,
+    error_type: String,
+}
+
 pub async fn find_user_handler(
-    services: Arc<Services>,
-    id: String,
-) -> Result<impl warp::Reply, warp::Rejection> {
-    let user_id = UserId::new_from_string(&id).map_err(|e| reject::custom(e))?;
+    UrlParams((id,)): UrlParams<(String,)>,
+    Extension(services): Extension<Arc<Services>>,
+) -> Result<response::Json<UserResponse>, DomainError> {
+    let user_id = UserId::new_from_string(&id)?;
     match services.user_service.find_by_id(&user_id).await {
-        Ok(user) => Ok(warp::reply::json(
-            &presenter::user_response::UserResponse::from_model(user),
+        Ok(user) => Ok(response::Json(
+            presenter::user_response::UserResponse::from_model(user),
         )),
-        Err(err) => Err(warp::reject::custom(err)),
+        Err(err) => Err(err),
     }
 }
 
@@ -45,19 +52,21 @@ pub struct CreateUserReq {
 }
 
 pub async fn create_user_handler(
-    services: Arc<Services>,
-    req: CreateUserReq,
-) -> Result<impl warp::Reply, warp::Rejection> {
-    let name = UserName::new(&req.name).map_err(|e| reject::custom(e))?;
-    let email = Email::new(&req.email).map_err(|e| reject::custom(e))?;
+    Extension(services): Extension<Arc<Services>>,
+    Json(req): Json<CreateUserReq>,
+) -> Result<impl IntoResponse, DomainError> {
+    let name = UserName::new(&req.name)?;
+    let email = Email::new(&req.email)?;
 
     let service_req = user_service::CreateUserReq::new(name, email);
     match services.user_service.create_user(service_req).await {
-        Ok(()) => Ok(StatusCode::OK),
-        Err(err) => Err(warp::reject::custom(err)),
+        Ok(()) => Ok(response::Json(json!({
+            "result": "ok"
+        }))),
+        Err(err) => Err(err),
     }
 }
-
+/*
 #[derive(Deserialize)]
 pub struct LoginRawRequest {
     email: String,
@@ -77,3 +86,4 @@ pub async fn login_handler(
         Err(err) => Err(warp::reject::custom(err)),
     }
 }
+*/

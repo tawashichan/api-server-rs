@@ -8,22 +8,17 @@ use crate::domain::model::{
 use crate::domain::traits::user_repository::IUserRepository;
 use anyhow::Result;
 use async_trait::async_trait;
-use dynomite::dynamodb::QueryInput;
-use dynomite::Item;
-use dynomite::{
-    dynamodb::{DynamoDb, DynamoDbClient, GetItemInput, PutItemInput},
-    Attributes, FromAttributes,
-};
 use std::sync::Arc;
+use dynamodb::Client;
 
 pub struct UserRepository {
     table_name: String,
     gsi_name_email: String,
-    client: Arc<DynamoDbClient>,
+    client: Arc<Client>,
 }
 
 impl UserRepository {
-    pub fn new(conf: &Config, client: Arc<DynamoDbClient>) -> Self {
+    pub fn new(conf: &Config, client: Arc<Client>) -> Self {
         UserRepository {
             table_name: conf.user_table_name.clone(),
             gsi_name_email: "gsi_email".to_string(),
@@ -32,7 +27,7 @@ impl UserRepository {
     }
 }
 
-#[derive(Item, Debug, Clone)]
+/*#[derive(Item, Debug, Clone)]
 struct UserRecord {
     #[dynomite(partition_key)]
     user_id: String,
@@ -57,12 +52,12 @@ impl UserRecord {
             email: email.string(),
         }
     }
-}
+}*/
 
 #[async_trait]
 impl IUserRepository for UserRepository {
     async fn find_by_email(&self, email: &Email) -> Result<User, DomainError> {
-        let email = email.string();
+        /*let email = email.string();
 
         let _result = self
             .client
@@ -75,13 +70,12 @@ impl IUserRepository for UserRepository {
                 ..Default::default()
             })
             .await
-            .map_err(|e| DomainError::DBError(e.to_string()))?;
-
+            .map_err(|e| DomainError::DBError(e.to_string()))?;*/
         unimplemented!()
     }
 
     async fn find_by_id(&self, user_id: &Id<User>) -> Result<User, DomainError> {
-        let user_id = user_id.string();
+        /*let user_id = user_id.string();
         let key = UserRecordKey { user_id };
         let key: Attributes = key.into();
 
@@ -97,11 +91,12 @@ impl IUserRepository for UserRepository {
 
         let rec: UserRecord = UserRecord::from_attrs(result.item.ok_or(DomainError::UserNotFound)?)
             .map_err(|_| DomainError::UserNotFound)?;
-        Ok(rec.to_model()?)
+        Ok(rec.to_model()?)*/
+        unimplemented!()
     }
 
     async fn save(&self, user: User) -> Result<(), DomainError> {
-        let record = UserRecord::from_model(user);
+        /*let record = UserRecord::from_model(user);
 
         let _ = self
             .client
@@ -112,7 +107,7 @@ impl IUserRepository for UserRepository {
             })
             .await
             .map_err(|e| DomainError::DBError(e.to_string()))?;
-
+    */
         Ok(())
     }
 }
