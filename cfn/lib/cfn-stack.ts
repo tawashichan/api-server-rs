@@ -67,5 +67,23 @@ export class CfnStack extends cdk.Stack {
     });
     userTable.grantFullAccess(appTaskRole);
 
+    userTable.addGlobalSecondaryIndex({
+      indexName: "gsi_email",
+      partitionKey: {
+        name: "email",
+        type: dynamo.AttributeType.STRING,
+      },
+    });
+
+    const userEmailTable = new dynamo.Table(this, `${id}-user-email`, {
+      tableName: `${id}-user-email-table`,
+      partitionKey: {
+        name: "email",
+        type: dynamo.AttributeType.STRING,
+      },
+      billingMode: dynamo.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+    userEmailTable.grantFullAccess(appTaskRole);
   }
 }

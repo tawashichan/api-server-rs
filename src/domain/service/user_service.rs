@@ -38,7 +38,7 @@ pub trait IUserService {
     async fn create_user(&self, req: CreateUserReq) -> Result<(), DomainError> {
         let id = self.id_generator().generate::<User>();
         let user = User::new(id, req.name, req.email);
-        self.user_repository().save(user).await
+        self.user_repository().create(user).await
     }
 }
 

@@ -70,7 +70,7 @@ pub async fn create_user_handler(
         Err(err) => Err(err),
     }
 }
-/*
+
 #[derive(Deserialize)]
 pub struct LoginRawRequest {
     email: String,
@@ -78,16 +78,15 @@ pub struct LoginRawRequest {
 }
 
 pub async fn login_handler(
-    services: Arc<Services>,
-    req: LoginRawRequest,
-) -> Result<impl warp::Reply, warp::Rejection> {
-    let email = Email::new(&req.email).map_err(|e| reject::custom(e))?;
-    let password = LoginPassword::new(&req.password).map_err(|e| reject::custom(e))?;
+    Extension(services): Extension<Arc<Services>>,
+    Json(req): Json<LoginRawRequest>,
+) -> Result<impl IntoResponse, DomainError> {
+    let email = Email::new(&req.email)?;
+    let password = LoginPassword::new(&req.password)?;
 
     let service_req = LoginRequest { email, password };
     match services.login_service.login(service_req).await {
-        Ok(resp) => Ok(warp::reply::json(&resp)),
-        Err(err) => Err(warp::reject::custom(err)),
+        Ok(resp) => Ok(response::Json(resp)),
+        Err(err) => Err(err),
     }
 }
-*/

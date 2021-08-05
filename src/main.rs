@@ -1,4 +1,4 @@
-use crate::handler::{create_user_handler, find_user_handler, HealthCheckResp};
+use crate::handler::{create_user_handler, find_user_handler, login_handler, HealthCheckResp};
 use domain::model::error::DomainError;
 use std::net::SocketAddr;
 use tokio;
@@ -76,6 +76,7 @@ async fn main() {
     let app = route("/health_check", get(health_check))
         .route("/users/:id", get(find_user_handler))
         .route("/users", post(create_user_handler))
+        .route("/login", post(login_handler))
         .layer(
             ServiceBuilder::new()
                 .layer(AddExtensionLayer::new(services))

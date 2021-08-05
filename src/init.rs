@@ -20,7 +20,11 @@ pub struct Services {
 }
 
 fn init_infra(conf: &Config) -> Infra {
-    let dynamodb_client = Arc::new(Client::from_env());
+    let aws_conf = dynamodb::Config::builder()
+        .region(dynamodb::Region::new("ap-northeast-1"))
+        .build();
+
+    let dynamodb_client = Arc::new(Client::from_conf(aws_conf));
     let user_repository = UserRepository::new(conf, dynamodb_client);
     let id_generator = IdGenerator::new();
     let time_keeper = Arc::new(TimeKeeper::new());
